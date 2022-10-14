@@ -13,4 +13,4 @@ tensorboard_logger:
 wandb_logger:
   _target_: pytorch_lightning.loggers.WandbLogger
   # TODO: enforce updating `project` so WandB will store data appropriately
-  project: validation-lfads-torch
+  project: icml2023-lfads-torch

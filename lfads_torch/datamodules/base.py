@@ -53,6 +53,9 @@ def attach_tensors(datamodule, data_dicts: list[dict], extra_keys: list[str] = [
             cf = data_dict["conversion_factor"]
             train_truth = to_tensor(data_dict["train_truth"]) / cf
             valid_truth = to_tensor(data_dict["valid_truth"]) / cf
+        elif "train_activity" in data_dict:
+            train_truth = to_tensor(data_dict["train_activity"])
+            valid_truth = to_tensor(data_dict["valid_activity"])
         else:
             train_truth = torch.full_like(train_recon_data, float("nan"))
             valid_truth = torch.full_like(valid_recon_data, float("nan"))
