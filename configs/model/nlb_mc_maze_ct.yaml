@@ -1,0 +1,83 @@
+_target_: lfads_torch.models.ct_model.CTLFADS
+
+# --------- architecture --------- #
+encod_data_dim: 137
+encod_seq_len: 140
+recon_seq_len: 180
+init_enc_dim: 100
+input_enc_dim: 80
+latent_dim: 16
+input_dim: 4
+
+# --------- neural cde --------- #
+neural_cde:
+  _target_: lfads_torch.models.ct_model.NeuralCDE
+  # input_size: ${model.input_dim}
+  input_size: 14
+  state_size: ${model.latent_dim}
+  hidden_size: 128
+  depth: 1
+
+# --------- readin / readout --------- #
+readin:
+  - _target_: torch.nn.Identity
+readout:
+  _target_: torch.nn.ModuleList
+  modules:
+    - _target_: lfads_torch.models.modules.readin_readout.FanInLinear
+      in_features: ${model.latent_dim}
+      out_features: 182
+
+# --------- augmentation --------- #
+train_aug_stack:
+  _target_: lfads_torch.models.modules.augmentations.AugmentationStack
+  transforms:
+    - _target_: lfads_torch.models.modules.augmentations.CoordinatedDropout
+      cd_rate: 0.3
+      cd_pass_rate: 0.0
+      ic_enc_seq_len: 0
+  batch_order: [0]
+  loss_order: [0]
+infer_aug_stack:
+  _target_: lfads_torch.models.modules.augmentations.AugmentationStack
+
+# --------- priors / posteriors --------- #
+reconstruction:
+  - _target_: lfads_torch.models.modules.recons.Poisson
+input_prior:
+  _target_: lfads_torch.models.modules.priors.AutoregressiveMultivariateNormal
+  tau: 10.0
+  nvar: 0.1
+  shape: ${model.input_dim}
+init_prior:
+  _target_: lfads_torch.models.modules.priors.MultivariateNormal
+  mean: 0
+  variance: 0.1
+  shape: ${model.latent_dim}
+init_post_var_min: 1.0e-4
+
+# --------- misc --------- #
+dropout_rate: 0.02 # sampled
+cell_clip: 5.0
+loss_scale: 1.0e+4
+recon_reduce_mean: True
+
+# --------- learning rate --------- #
+lr_init: 1.0e-2
+lr_stop: 1.0e-5
+lr_decay: 0.95
+lr_patience: 6
+lr_adam_epsilon: 1.0e-7
+lr_scheduler: True
+weight_decay: 0.0
+
+# --------- regularization --------- #
+# l2_start_epoch: 0
+# l2_increase_epoch: 80
+# l2_init_enc_scale: 0.0
+# l2_input_enc_scale: 0.0
+# l2_ncde_scale: 0.0 # sampled
+kl_start_epoch: 0
+kl_increase_epoch: 80
+kl_init_scale: 0.0 # sampled
+kl_input_scale: 0.0 # sampled
