@@ -168,7 +168,7 @@ class TrajectoryPlot(pl.Callback):
     all samples in the validation set and logs to tensorboard.
     """
 
-    def __init__(self, log_every_n_epochs=100):
+    def __init__(self, traj_type="factors", log_every_n_epochs=100):
         """Initializes the callback.
 
         Parameters
@@ -176,6 +176,7 @@ class TrajectoryPlot(pl.Callback):
         log_every_n_epochs : int, optional
             The frequency with which to plot and log, by default 100
         """
+        self.traj_type = traj_type
         self.log_every_n_epochs = log_every_n_epochs
 
     def on_validation_epoch_end(self, trainer, pl_module):
@@ -205,7 +206,7 @@ class TrajectoryPlot(pl.Callback):
                 batch = send_batch_to_device({s: batch}, pl_module.device)
                 # Perform the forward pass through the model
                 output = pl_module.predict_step(batch, None, sample_posteriors=False)[s]
-                latents.append(output.factors)
+                latents.append(getattr(output, self.traj_type))
             latents = torch.cat(latents).detach().cpu().numpy()
             # Reduce dimensionality if necessary
             n_samp, n_step, n_lats = latents.shape
@@ -229,7 +230,7 @@ class TrajectoryPlot(pl.Callback):
             # Log the figure
             log_figure(
                 trainer.loggers,
-                f"trajectory_plot/sess{s}",
+                f"trajectory_plot/{self.traj_type}/sess{s}",
                 fig,
                 trainer.global_step,
             )

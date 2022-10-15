@@ -9,4 +9,5 @@ raster_plot:
 
 trajectory_plot:
   _target_: lfads_torch.callbacks.TrajectoryPlot
+  traj_type: gen_states
   log_every_n_epochs: 20

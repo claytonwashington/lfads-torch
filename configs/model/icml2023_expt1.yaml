@@ -7,10 +7,10 @@ recon_seq_len: 70
 ext_input_dim: 0
 ic_enc_seq_len: 0
 ic_enc_dim: 64
-ci_enc_dim: 64
+ci_enc_dim: 0
 ci_lag: 1
-con_dim: 64
-co_dim: 1
+con_dim: 0
+co_dim: 0
 ic_dim: 64
 gen_dim: 64
 fac_dim: 16
@@ -41,16 +41,21 @@ infer_aug_stack:
 # --------- priors / posteriors --------- #
 reconstruction:
   - _target_: lfads_torch.models.modules.recons.Poisson
+variational: False
 co_prior:
-  _target_: lfads_torch.models.modules.priors.AutoregressiveMultivariateNormal
-  tau: 10.0
-  nvar: 0.1
-  shape: ${model.co_dim}
+  _target_: lfads_torch.models.modules.priors.Null
 ic_prior:
-  _target_: lfads_torch.models.modules.priors.MultivariateNormal
-  mean: 0
-  variance: 0.1
-  shape: ${model.ic_dim}
+  _target_: lfads_torch.models.modules.priors.Null
+# co_prior:
+#   _target_: lfads_torch.models.modules.priors.AutoregressiveMultivariateNormal
+#   tau: 10.0
+#   nvar: 0.1
+#   shape: ${model.co_dim}
+# ic_prior:
+#   _target_: lfads_torch.models.modules.priors.MultivariateNormal
+#   mean: 0
+#   variance: 0.1
+#   shape: ${model.ic_dim}
 ic_post_var_min: 1.0e-4
 
 # --------- misc --------- #
