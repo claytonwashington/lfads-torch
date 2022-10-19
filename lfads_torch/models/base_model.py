@@ -28,6 +28,7 @@ class LFADS(pl.LightningModule):
         ic_dim: int,
         gen_dim: int,
         fac_dim: int,
+        gen_type: str,
         dropout_rate: float,
         reconstruction: nn.ModuleList,
         variational: bool,

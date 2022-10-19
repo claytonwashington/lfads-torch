@@ -1,5 +1,5 @@
 defaults:
-  - model: nlb_mc_maze
+  - model: icml2023_nlb_mc_maze
   - datamodule: nlb_mc_maze
   - callbacks: nlb
   - logger: default
@@ -11,7 +11,7 @@ ignore_warnings: True
 trainer:
   _target_: pytorch_lightning.Trainer
   gradient_clip_val: 200
-  max_epochs: 1_000
+  max_epochs: 500
   log_every_n_steps: 5
   # Prevent console output by individual models
   enable_progress_bar: False

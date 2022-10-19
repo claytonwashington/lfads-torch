@@ -3,6 +3,51 @@ from torch import nn
 
 from .initializers import init_gru_cell_
 
+# class GatedMLPCell(nn.Module):
+#     def __init__(
+#         self,
+#         input_size: int,
+#         hidden_size: int,
+#     ):
+#         super().__init__()
+#         self.gate = nn.Sequential(
+#             nn.Linear(hidden_size + input_size, hidden_size),
+#             nn.Sigmoid(),
+#         )
+#         sigma_w = torch.sqrt(2**(1-1/2))
+#         nn.init.normal_(self.gate[0].weight, std=sigma_w / torch.sqrt(hidden_size))
+#         self.mlp = nn.Sequential(
+#             nn.Linear(hidden_size + input_size, hidden_size),
+#             nn.ReLU(),
+#             nn.Linear(hidden_size, hidden_size),
+#         )
+#         # TMP: For compatibility with `compute_l2_penalty`
+#         self.weight_hh = torch.tensor(0.0)
+
+#     def forward(self, input: torch.Tensor, hidden: torch.Tensor):
+#         hidden_input = torch.cat([hidden, input], dim=1)
+#         return hidden + self.gate(hidden_input) * (-hidden + self.mlp(hidden_input))
+
+
+class MLPCell(nn.Module):
+    def __init__(
+        self,
+        input_size: int,
+        hidden_size: int,
+    ):
+        super().__init__()
+        self.mlp = nn.Sequential(
+            nn.Linear(hidden_size + input_size, 128),
+            nn.ReLU(),
+            nn.Linear(128, hidden_size),
+        )
+        # TMP: For compatibility with `compute_l2_penalty`
+        self.weight_hh = torch.tensor(0.0)
+
+    def forward(self, input: torch.Tensor, hidden: torch.Tensor):
+        hidden_input = torch.cat([hidden, input], dim=1)
+        return hidden + 0.1 * self.mlp(hidden_input)
+
 
 class ClippedGRUCell(nn.GRUCell):
     def __init__(

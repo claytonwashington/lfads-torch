@@ -10,3 +10,4 @@ flake8
 ray[tune]==1.13.0
 matplotlib
 wandb
+FrEIA

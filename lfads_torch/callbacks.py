@@ -147,10 +147,9 @@ class RasterPlot(pl.Callback):
                 for j, (ax, array) in enumerate(zip(ax_col, plot_arrays)):
                     if j < len(plot_arrays) - 1:
                         ax.imshow(array[i].T, interpolation="none", aspect="auto")
+                        ax.autoscale(False)
                         ax.vlines(steps_encod, 0, neur_recon, color="orange")
                         ax.hlines(neur_encod, 0, steps_recon, color="orange")
-                        ax.set_xlim(0, steps_recon)
-                        ax.set_ylim(0, neur_recon)
                     else:
                         ax.plot(array[i])
             plt.tight_layout()

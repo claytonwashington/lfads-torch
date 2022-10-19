@@ -1,5 +1,5 @@
 defaults:
-  - model: icml2023_lorenz
+  - model: icml2023_expt1_inn
   - datamodule: icml2023_lorenz
   - callbacks: default
   - logger: default
@@ -11,7 +11,7 @@ ignore_warnings: False
 trainer:
   _target_: pytorch_lightning.Trainer
   gradient_clip_val: 200
-  max_epochs: 1_000
+  max_epochs: 500
   log_every_n_steps: 5
   # track_grad_norm: 2
 

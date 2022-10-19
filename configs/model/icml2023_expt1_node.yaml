@@ -12,8 +12,9 @@ ci_lag: 1
 con_dim: 0
 co_dim: 0
 ic_dim: 64
-gen_dim: 64
-fac_dim: 16
+gen_dim: 3
+fac_dim: ${model.gen_dim}
+gen_type: mlp
 
 # --------- readin / readout --------- #
 readin:
