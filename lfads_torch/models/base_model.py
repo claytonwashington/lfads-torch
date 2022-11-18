@@ -8,7 +8,6 @@ from ..utils import transpose_lists
 from .modules import augmentations
 from .modules.decoder import Decoder
 from .modules.encoder import Encoder
-from .modules.l2 import compute_l2_penalty
 from .modules.priors import Null
 
 
@@ -48,12 +47,6 @@ class LFADS(pl.LightningModule):
         lr_patience: int,
         lr_adam_epsilon: float,
         weight_decay: float,
-        l2_start_epoch: int,
-        l2_increase_epoch: int,
-        l2_ic_enc_scale: float,
-        l2_ci_enc_scale: float,
-        l2_gen_scale: float,
-        l2_con_scale: float,
         kl_start_epoch: int,
         kl_increase_epoch: int,
         kl_ic_scale: float,
@@ -215,11 +208,6 @@ class LFADS(pl.LightningModule):
         # Compute reconstruction loss for each session
         sess_recon = [ra.mean() for ra in recon_all]
         recon = torch.mean(torch.stack(sess_recon))
-        # Compute the L2 penalty on recurrent weights
-        l2 = compute_l2_penalty(self, self.hparams)
-        l2_ramp = (self.current_epoch + 1 - hps.l2_start_epoch) / (
-            hps.l2_increase_epoch + 1
-        )
         # Collect posterior parameters for fast KL calculation
         ic_mean = torch.cat([output[s].ic_mean for s in sessions])
         ic_std = torch.cat([output[s].ic_std for s in sessions])
@@ -231,11 +219,9 @@ class LFADS(pl.LightningModule):
         kl_ramp = (self.current_epoch + 1 - hps.kl_start_epoch) / (
             hps.kl_increase_epoch + 1
         )
-        # Clamp the ramps
-        l2_ramp = torch.clamp(torch.tensor(l2_ramp), 0, 1)
         kl_ramp = torch.clamp(torch.tensor(kl_ramp), 0, 1)
         # Compute the final loss
-        loss = hps.loss_scale * (recon + l2_ramp * l2 + kl_ramp * (ic_kl + co_kl))
+        loss = hps.loss_scale * (recon + kl_ramp * (ic_kl + co_kl))
         # Compute the reconstruction accuracy, if applicable
         output_means = [
             self.recon[s].compute_means(output[s].output_params) for s in sessions
@@ -261,8 +247,6 @@ class LFADS(pl.LightningModule):
             f"{split}/loss": loss,
             f"{split}/recon": recon,
             f"{split}/r2": r2,
-            f"{split}/wt_l2": l2,
-            f"{split}/wt_l2/ramp": l2_ramp,
             f"{split}/wt_kl": ic_kl + co_kl,
             f"{split}/wt_kl/ic": ic_kl,
             f"{split}/wt_kl/co": co_kl,
@@ -315,8 +299,6 @@ class LFADS(pl.LightningModule):
             {
                 "hp/lr_init": self.hparams.lr_init,
                 "hp/dropout_rate": self.hparams.dropout_rate,
-                "hp/l2_gen_scale": self.hparams.l2_gen_scale,
-                "hp/l2_con_scale": self.hparams.l2_con_scale,
                 "hp/kl_co_scale": self.hparams.kl_co_scale,
                 "hp/kl_ic_scale": self.hparams.kl_ic_scale,
             }
