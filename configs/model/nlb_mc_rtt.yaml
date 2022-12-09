@@ -70,12 +70,6 @@ lr_scheduler: True
 
 # --------- regularization --------- #
 weight_decay: 0.0
-l2_start_epoch: 0
-l2_increase_epoch: 80
-l2_ic_enc_scale: 0.0
-l2_ci_enc_scale: 0.0
-l2_gen_scale: 0.0 # sampled
-l2_con_scale: 0.0 # sampled
 kl_start_epoch: 0
 kl_increase_epoch: 80
 kl_ic_scale: 0.0 # sampled

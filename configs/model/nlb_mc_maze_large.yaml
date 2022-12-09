@@ -1,9 +1,9 @@
 _target_: lfads_torch.models.base_model.LFADS
 
 # --------- architecture --------- #
-encod_data_dim: 49
-encod_seq_len: 120
-recon_seq_len: 160
+encod_data_dim: 122
+encod_seq_len: 140
+recon_seq_len: 180
 ext_input_dim: 0
 ic_enc_seq_len: 0
 ic_enc_dim: 100
@@ -11,7 +11,7 @@ ci_enc_dim: 80
 ci_lag: 1
 con_dim: 80
 co_dim: 4
-ic_dim: 100 # 50 in autolfads paper
+ic_dim: 100
 gen_dim: 100
 fac_dim: 40
 
@@ -23,14 +23,14 @@ readout:
   modules:
     - _target_: lfads_torch.models.modules.readin_readout.FanInLinear
       in_features: ${model.fac_dim}
-      out_features: 65
+      out_features: 162
 
 # --------- augmentation --------- #
 train_aug_stack:
   _target_: lfads_torch.models.modules.augmentations.AugmentationStack
   transforms:
     - _target_: lfads_torch.models.modules.augmentations.CoordinatedDropout
-      cd_rate: 0.3
+      cd_rate: 0.3 # sampled
       cd_pass_rate: 0.0
       ic_enc_seq_len: ${model.ic_enc_seq_len}
   batch_order: [0]
@@ -41,7 +41,6 @@ infer_aug_stack:
 # --------- priors / posteriors --------- #
 reconstruction:
   - _target_: lfads_torch.models.modules.recons.Poisson
-variational: True
 co_prior:
   _target_: lfads_torch.models.modules.priors.AutoregressiveMultivariateNormal
   tau: 10.0
@@ -62,11 +61,12 @@ recon_reduce_mean: True
 
 # --------- learning rate --------- #
 lr_init: 4.0e-3
+lr_adam_epsilon: 1.0e-8
+# scheduler params not used during pbt
 lr_stop: 1.0e-5
 lr_decay: 0.95
 lr_patience: 6
-lr_adam_epsilon: 1.0e-7
-lr_scheduler: True
+lr_scheduler: False
 
 # --------- regularization --------- #
 weight_decay: 0.0
