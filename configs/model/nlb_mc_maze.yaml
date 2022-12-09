@@ -37,6 +37,10 @@ train_aug_stack:
   loss_order: [0]
 infer_aug_stack:
   _target_: lfads_torch.models.modules.augmentations.AugmentationStack
+  transforms:
+    # Ignore NaNs for heldout data in test-phase validation loss
+    - _target_: lfads_torch.models.modules.augmentations.IgnoreNaNLoss
+  loss_order: [0]
 
 # --------- priors / posteriors --------- #
 reconstruction:
@@ -61,15 +65,15 @@ loss_scale: 1.0e+4
 recon_reduce_mean: True
 
 # --------- learning rate --------- #
-lr_init: 1.0e-2
+lr_init: 5.0e-3
 lr_stop: 1.0e-5
 lr_decay: 0.95
-lr_patience: 10
+lr_patience: 20
 lr_adam_epsilon: 1.0e-7
 lr_scheduler: True
 
 # --------- regularization --------- #
-weight_decay: 0.0
+weight_decay: 1.0e-3
 kl_start_epoch: 0
 kl_increase_epoch: 80
 kl_ic_scale: 0.0 # sampled
