@@ -16,3 +16,4 @@ wandb_logger:
   project: validation-lfads-torch
   tags:
     - ${datamodule.dataset_name}
+    - null # Overwrite this in the run script

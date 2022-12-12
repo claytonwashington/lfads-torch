@@ -6,14 +6,14 @@ encod_seq_len: 140
 recon_seq_len: 180
 ext_input_dim: 0
 ic_enc_seq_len: 0
-ic_enc_dim: 100
-ci_enc_dim: 80
+ic_enc_dim: 78
+ci_enc_dim: 68
 ci_lag: 1
-con_dim: 80
-co_dim: 4
-ic_dim: 100
-gen_dim: 100
-fac_dim: 40
+con_dim: 69
+co_dim: 1
+ic_dim: 62
+gen_dim: 191
+fac_dim: 71
 
 # --------- readin / readout --------- #
 readin:
@@ -59,7 +59,7 @@ ic_prior:
 ic_post_var_min: 1.0e-4
 
 # --------- misc --------- #
-dropout_rate: 0.02 # sampled
+dropout_rate: 0.32588645815849304
 cell_clip: 5.0
 loss_scale: 1.0e+4
 recon_reduce_mean: True
@@ -73,8 +73,8 @@ lr_adam_epsilon: 1.0e-7
 lr_scheduler: True
 
 # --------- regularization --------- #
-weight_decay: 1.0e-3
+weight_decay: 1.5e-3
 kl_start_epoch: 0
 kl_increase_epoch: 80
-kl_ic_scale: 0.0 # sampled
-kl_co_scale: 0.0 # sampled
+kl_ic_scale: 5.973606675979681e-7
+kl_co_scale: 3.04334655254479e-8
