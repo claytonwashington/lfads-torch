@@ -152,10 +152,10 @@ class LFADS(pl.LightningModule):
     def configure_optimizers(self):
         hps = self.hparams
         # Create an optimizer
-        optimizer = torch.optim.Adam(
+        optimizer = torch.optim.AdamW(
             self.parameters(),
             lr=hps.lr_init,
-            eps=hps.lr_adam_epsilon,
+            # eps=hps.lr_adam_epsilon,
             weight_decay=hps.weight_decay,
         )
         if hps.lr_scheduler:
