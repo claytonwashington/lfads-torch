@@ -9,11 +9,3 @@ tensorboard_logger:
   save_dir: "."
   version: ""
   name: ""
-
-wandb_logger:
-  _target_: pytorch_lightning.loggers.WandbLogger
-  # TODO: enforce updating `project` so WandB will store data appropriately
-  project: validation-lfads-torch
-  tags:
-    - ${datamodule.dataset_name}
-    - null # Overwrite this in the run script
