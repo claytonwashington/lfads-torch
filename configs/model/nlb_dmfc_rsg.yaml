@@ -59,7 +59,7 @@ ic_prior:
 ic_post_var_min: 1.0e-4
 
 # --------- misc --------- #
-dropout_rate: 0.02 # sampled
+dropout_rate: 0.25
 cell_clip: 5.0
 loss_scale: 1.0e+4
 recon_reduce_mean: True
