@@ -16,7 +16,7 @@ class DecoderCell(nn.Module):
         # Create the generator
         self.gen_cell = nn.GRUCell(hps.ext_input_dim + hps.co_dim, hps.gen_dim)
         # Create the mapping from generator states to factors
-        self.fac_linear = nn.Linear(hps.gen_dim, hps.fac_dim, bias=False)
+        self.fac_linear = KernelNormalizedLinear(hps.gen_dim, hps.fac_dim, bias=False)
         # Create the dropout layer
         self.dropout = nn.Dropout(hps.dropout_rate)
         # Decide whether to use the controller
