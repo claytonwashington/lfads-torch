@@ -51,14 +51,13 @@ class Encoder(nn.Module):
             f"Sequence length specified in HPs ({hps.encod_seq_len}) "
             f"must match data dim 1 ({data.shape[1]})."
         )
-        data_drop = self.dropout(data)
         # option to use separate segment for IC encoding
         if hps.ic_enc_seq_len > 0:
-            ic_enc_data = data_drop[:, : hps.ic_enc_seq_len, :]
-            ci_enc_data = data_drop[:, hps.ic_enc_seq_len :, :]
+            ic_enc_data = data[:, : hps.ic_enc_seq_len, :]
+            ci_enc_data = data[:, hps.ic_enc_seq_len :, :]
         else:
-            ic_enc_data = data_drop
-            ci_enc_data = data_drop
+            ic_enc_data = data
+            ci_enc_data = data
         # Pass data through IC encoder
         ic_enc_h0 = torch.tile(self.ic_enc_h0, (1, batch_size, 1))
         _, h_n = self.ic_enc(ic_enc_data, ic_enc_h0)
