@@ -41,6 +41,12 @@ class Encoder(nn.Module):
                 bidirectional=True,
                 batch_first=True,
             )
+            # Create learnable forward encoding
+            fwd_steps = hps.recon_seq_len - hps.encod_seq_len
+            if fwd_steps > 0:
+                self.fwd_enc = nn.Parameter(
+                    torch.zeros((1, fwd_steps, 2 * hps.ci_enc_dim), requires_grad=True)
+                )
         # Activation dropout layer
         self.dropout = nn.Dropout(hps.dropout_rate)
 
@@ -77,9 +83,11 @@ class Encoder(nn.Module):
             ci_bwd = F.pad(ci_bwd, (0, 0, 0, hps.ci_lag, 0, 0))
             ci_len = hps.encod_seq_len - hps.ic_enc_seq_len
             ci = torch.cat([ci_fwd[:, :ci_len, :], ci_bwd[:, -ci_len:, :]], dim=2)
-            # Add extra zeros if necessary for forward prediction
+            # Concatenate learnable forward encoding
             fwd_steps = hps.recon_seq_len - hps.encod_seq_len
-            ci = F.pad(ci, (0, 0, 0, fwd_steps, 0, 0))
+            if fwd_steps > 0:
+                fwd_enc = torch.tile(self.fwd_enc, (batch_size, 1, 1))
+                ci = torch.cat([ci, fwd_enc], dim=1)
         else:
             # Create a placeholder if there's no controller
             ci = torch.zeros(data.shape[0], hps.recon_seq_len, 0).to(data.device)
