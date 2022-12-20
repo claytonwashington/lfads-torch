@@ -40,6 +40,9 @@ infer_aug_stack:
   transforms:
     # NLB has masked some regions of validation data with NaNs
     - _target_: lfads_torch.models.modules.augmentations.IgnoreNaNLoss
+      encod_data_dim: ${model.encod_data_dim}
+      encod_seq_len: ${model.encod_seq_len}
+      scale_by_quadrant: True
   loss_order: [0]
 
 # --------- priors / posteriors --------- #
@@ -73,7 +76,13 @@ lr_adam_epsilon: 1.0e-7
 lr_scheduler: True
 
 # --------- regularization --------- #
-weight_decay: 0.0
+weight_decay: 1.0e-8
+l2_start_epoch: 0
+l2_increase_epoch: 80
+l2_ic_enc_scale: 0.0
+l2_ci_enc_scale: 0.0
+l2_gen_scale: 0.0 # sampled
+l2_con_scale: 0.0 # sampled
 kl_start_epoch: 0
 kl_increase_epoch: 80
 kl_ic_scale: 0.0 # sampled
