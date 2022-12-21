@@ -162,7 +162,7 @@ class LFADS(pl.LightningModule):
         optimizer = torch.optim.AdamW(
             self.parameters(),
             lr=hps.lr_init,
-            # eps=hps.lr_adam_epsilon,
+            eps=hps.lr_adam_epsilon,
             weight_decay=hps.weight_decay,
         )
         if hps.lr_scheduler:

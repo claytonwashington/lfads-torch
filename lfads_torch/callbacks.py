@@ -343,7 +343,7 @@ class NLBEvaluation(pl.Callback):
         # Compute smoothed metrics
         for k, v in metrics.items():
             if k not in self.smth_metrics:
-                self.smth_metrics[k] = ExpSmoothedMetric(coef=0.2)
+                self.smth_metrics[k] = ExpSmoothedMetric(coef=0.7)
             self.smth_metrics[k].update(v)
         # Log actual and smoothed metrics
         pl_module.log_dict(
@@ -352,3 +352,5 @@ class NLBEvaluation(pl.Callback):
                 **{k + "_smth": m.compute() for k, m in self.smth_metrics.items()},
             }
         )
+        # Reset the smoothed metrics (per-step aggregation not necessary)
+        [m.reset() for m in self.smth_metrics.values()]
