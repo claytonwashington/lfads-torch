@@ -1,33 +1,44 @@
+import logging
 import os
 import shutil
 import sys
 from pathlib import Path
 
 import yaml
-from hydra.utils import instantiate
 from ray import tune
 from ray.tune import CLIReporter
-from ray.tune.search.basic_variant import BasicVariantGenerator
+from ray.tune.schedulers import PopulationBasedTraining
+from ray.tune.suggest.basic_variant import BasicVariantGenerator
 
-from lfads_torch.extensions.tune import BinaryTournamentPBT, ImprovementRatioStopper
 from lfads_torch.run_model import run_model
 from lfads_torch.utils import cleanup_best_model, read_pbt_fitlog
 
+from PercentageChangeStopper import PercentageChangeStopper
 
-# Function to keep dropout and CD rates in-bounds
-def clip_config_rates(config):
-    return {k: min(v, 0.99) if "_rate" in k else v for k, v in config.items()}
-
+logger = logging.getLogger(__name__)
 
 # Get path arguments provided by NeuroCAAS
-_, datapath, configpath, resultpath = sys.argv
-print(f"--Data: {datapath} Config: {configpath} Results: {resultpath}--")
+_, datadirpath, configpath, resultpath = sys.argv
+print(f"--Data: {datadirpath} Config: {configpath} Results: {resultpath}--")
 # Load the YAML file to get PBT parameters
 with open(configpath) as yfile:
     cfg = yaml.safe_load(yfile)["pbt"]
-# Instantiate hyperparameters
-hyperparam_space = instantiate(cfg["hps"])
-init_space = {name: tune.sample_from(hp.init) for name, hp in hyperparam_space.items()}
+# Convert HPs to the correct format
+inits, resamps = {}, {}
+for n, hp in cfg["hps"].items():
+    dist = getattr(tune, hp["dist"])
+    inits[n] = dist(*hp["init_range"])
+    resamps[n] = dist(*hp["resamp_range"])
+
+#  MAKE THE CONFIG AND OVERRIDES  ####
+overrides= {}
+for i, datapath in enumerate(os.listdir(datadirpath)):
+    overrides[f"datamodule.data_paths.{str(i)}"] = os.path.join(datadirpath,datapath)
+config=overrides.copy()
+config.update(inits)
+
+##########################
+
 # Run the hyperparameter search
 analysis = tune.run(
     tune.with_parameters(
@@ -38,31 +49,38 @@ analysis = tune.run(
     metric=cfg["metric"],
     mode="min",
     name=Path(resultpath).name,
-    stop=ImprovementRatioStopper(
-        num_trials=cfg["num_samples"],
-        perturbation_interval=cfg["perturbation_interval"],
-        burn_in_period=cfg["burn_in_period"],
-        metric=cfg["metric"],
-        patience=cfg["patience"],
-        min_improvement_ratio=cfg["min_improvement_ratio"],
-    ),
-    config={"datamodule.data_paths.0": datapath, **init_space},
+    config=config,
     resources_per_trial=cfg["resources_per_trial"],
     num_samples=cfg["num_samples"],
     local_dir=Path(resultpath).parent,
     search_alg=BasicVariantGenerator(random_state=0),
-    scheduler=BinaryTournamentPBT(
+    scheduler=PopulationBasedTraining(
+        time_attr="cur_epoch",
         perturbation_interval=cfg["perturbation_interval"],
         burn_in_period=cfg["burn_in_period"],
-        hyperparam_mutations=hyperparam_space,
+        hyperparam_mutations=resamps,
+        quantile_fraction=cfg["quantile_fraction"],
+        resample_probability=cfg["resample_probability"],
+        custom_explore_fn=None,
+        log_config=True,
+        require_attrs=True,
+        synch=True,
     ),
     keep_checkpoints_num=1,
     verbose=1,
     progress_reporter=CLIReporter(
-        metric_columns=[cfg["metric"], "cur_epoch"],
+        metric_columns=["valid/recon_smth", "cur_epoch"],
         sort_by_metric=True,
     ),
     trial_dirname_creator=lambda trial: str(trial),
+    stop=PercentageChangeStopper(
+        metric="valid/recon_smth",
+        patience=4,
+        min_percent_improvement=.001,
+        ramp_up=80,
+        pert_int=25,
+        num_trials=8
+    ),
 )
 # Copy the best model to a new folder so it is easy to identify
 best_model_dir = Path(resultpath) / "best_model"
@@ -70,12 +88,12 @@ shutil.copytree(analysis.best_logdir, best_model_dir)
 # Switch working directory to this folder (usually handled by tune)
 os.chdir(best_model_dir)
 # Load the best model and run posterior sampling (skip training)
-best_ckpt_dir = best_model_dir / Path(analysis.best_checkpoint._local_path).name
+best_ckpt_dir = best_model_dir / Path(analysis.best_checkpoint.local_path).name
 run_model(
     checkpoint_dir=best_ckpt_dir,
     config_path=configpath,
     do_train=False,
-    overrides={"datamodule.data_paths.0": datapath},
+    overrides=overrides,
 )
 # Assemble training / hyperparameter log
 fit_df = read_pbt_fitlog(resultpath)
