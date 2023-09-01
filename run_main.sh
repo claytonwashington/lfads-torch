@@ -1,7 +1,7 @@
 #! /bin/bash
 echo "--Moving data and config files into temporary directory--"
 source activate neurocaas
-neurocaas-contrib workflow get-data
+neurocaas-contrib workflow get-data-multi
 neurocaas-contrib workflow get-config
 
 echo "--Parsing paths--"
