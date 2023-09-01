@@ -10,10 +10,11 @@ from ray.tune import CLIReporter
 
 from ray.tune.schedulers import PopulationBasedTraining
 from ray.tune.suggest.basic_variant import BasicVariantGenerator
+from lfads_torch.extensions.tune import ImprovementRatioStopper
 
 from lfads_torch.run_model import run_model
 from lfads_torch.utils import cleanup_best_model, read_pbt_fitlog
-from lfads_torch.extensions.tune import ImprovementRatioStopper
+
 
 logger = logging.getLogger(__name__)
 
@@ -73,15 +74,17 @@ analysis = tune.run(
         sort_by_metric=True,
     ),
     trial_dirname_creator=lambda trial: str(trial),
-    stop=PercentageChangeStopper(
-        metric="valid/recon_smth",
-        patience=4,
-        min_percent_improvement=.001,
-        ramp_up=80,
-        pert_int=25,
-        num_trials=8
+    stop=ImprovementRatioStopper(
+        num_trials=cfg["num_samples"],
+        perturbation_interval=cfg["perturbation_interval"],
+        burn_in_period=cfg["burn_in_period"],
+        metric=cfg["metric"],
+        patience=cfg["patience"],
+        min_improvement_ratio=cfg["min_improvement_ratio"],
     ),
 )
+
+
 # Copy the best model to a new folder so it is easy to identify
 best_model_dir = Path(resultpath) / "best_model"
 shutil.copytree(analysis.best_logdir, best_model_dir)
