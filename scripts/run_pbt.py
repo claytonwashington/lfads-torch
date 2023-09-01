@@ -7,13 +7,13 @@ from pathlib import Path
 import yaml
 from ray import tune
 from ray.tune import CLIReporter
+
 from ray.tune.schedulers import PopulationBasedTraining
 from ray.tune.suggest.basic_variant import BasicVariantGenerator
 
 from lfads_torch.run_model import run_model
 from lfads_torch.utils import cleanup_best_model, read_pbt_fitlog
-
-from PercentageChangeStopper import PercentageChangeStopper
+from lfads_torch.extensions.tune import ImprovementRatioStopper
 
 logger = logging.getLogger(__name__)
 
