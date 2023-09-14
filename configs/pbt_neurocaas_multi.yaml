@@ -2,6 +2,8 @@
 seed: null
 ignore_warnings: True
 
+multisession: True
+
 model:
   _target_: lfads_torch.models.base_model.LFADS
   # --------- architecture --------- #
