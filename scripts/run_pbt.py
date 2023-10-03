@@ -24,14 +24,21 @@ _, datadirpath, configpath, resultpath = sys.argv
 print(f"--Data: {datadirpath} Config: {configpath} Results: {resultpath}--")
 # Load the YAML file to get PBT parameters
 with open(configpath) as yfile:
-    cfg = yaml.safe_load(yfile)["pbt"]
+    configfile = yaml.safe_load(yfile)
+    cfg = configfile["pbt"]
+    cfg_datapaths = configfile["datamodule"]["data_paths"]
+
 # Instantiate hyperparameters
 hyperparam_space = instantiate(cfg["hps"])
 init_space = {name: tune.sample_from(hp.init) for name, hp in hyperparam_space.items()}
 
+# Make sure data path is directory
+if not os.path.isdir(datadirpath):
+    datadirpath = os.path.dirname(datadirpath)
+
 # Make config and overrides
 overrides= {}
-for i, datapath in enumerate(os.listdir(datadirpath)):
+for i, datapath in enumerate(cfg_datapaths):
     overrides[f"datamodule.data_paths.{str(i)}"] = os.path.join(datadirpath,datapath)
 config=overrides.copy()
 config.update(init_space)
@@ -82,7 +89,7 @@ shutil.copytree(analysis.best_logdir, best_model_dir)
 # Switch working directory to this folder (usually handled by tune)
 os.chdir(best_model_dir)
 # Load the best model and run posterior sampling (skip training)
-best_ckpt_dir = best_model_dir / Path(analysis.best_checkpoint.local_path).name
+best_ckpt_dir = best_model_dir / Path(analysis.best_checkpoint._local_path).name
 run_model(
     checkpoint_dir=best_ckpt_dir,
     config_path=configpath,
