@@ -2,6 +2,7 @@ import subprocess
 import yaml
 
 command_multisession = """
+#!/bin/bash
 source activate neurocaas
 echo \"--Moving data into temporary directory and parsing path--\"
 neurocaas-contrib workflow get-data-multi
@@ -11,7 +12,7 @@ resultpath=$(neurocaas-contrib workflow get-resultpath-tmp)
 
 echo \"--Running AutoLFADS--\"
 source activate lfads-torch
-python /home/ubuntu/lfads-torch/scripts/run_pbt.py $datapath ${} $resultpath
+python /home/ubuntu/lfads-torch/scripts/run_pbt.py $datapath {} $resultpath
 source deactivate
 
 echo "--Writing results--"
@@ -23,6 +24,7 @@ source deactivate
 """
 
 command_single = """
+#!/bin/bash
 source activate neurocaas
 echo \"--Moving data into temporary directory and parsing path--\"
 neurocaas-contrib workflow get-data
@@ -32,7 +34,7 @@ resultpath=$(neurocaas-contrib workflow get-resultpath-tmp)
 
 echo \"--Running AutoLFADS--\"
 source activate lfads-torch
-python /home/ubuntu/lfads-torch/scripts/run_pbt.py $datapath ${} $resultpath
+python /home/ubuntu/lfads-torch/scripts/run_pbt.py $datapath {} $resultpath
 source deactivate
 
 echo "--Writing results--"
@@ -57,7 +59,7 @@ def get_config():
     echo $(neurocaas-contrib workflow get-configpath)
     source deactivate
     """
-    return run_command_and_get_output(command)
+    return run_command_and_get_output(command).split('\n')[-1]
 
 
 def main():
@@ -65,10 +67,12 @@ def main():
     with open(configpath, 'r') as file:
         config = yaml.safe_load(file)
         if config["multisession"] == "True":
-            subprocess.run(command_multisession.format(configpath))
+            subprocess.run(command_multisession.format(configpath),shell=True)
         else:
-            subprocess.run(command_single.format(configpath))
+            subprocess.run(command_single.format(configpath),shell=True)
 
 
 if __name__ == "__main__":
+    with open("/home/cbwash2/lfads-torch-fork/lfads-torch/test.txt",'w') as inf:
+        inf.write("yes")
     main()
