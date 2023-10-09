@@ -66,13 +66,11 @@ def main():
     configpath = get_config()
     with open(configpath, 'r') as file:
         config = yaml.safe_load(file)
-        if config["multisession"] == "True":
-            subprocess.run(command_multisession.format(configpath),shell=True)
+        if config["multisession"] == True:
+            subprocess.run(['/bin/bash','-c',command_multisession.format(configpath)])
         else:
-            subprocess.run(command_single.format(configpath),shell=True)
+            subprocess.run(['/bin/bash','-c',command_single.format(configpath)])
 
 
 if __name__ == "__main__":
-    with open("/home/cbwash2/lfads-torch-fork/lfads-torch/test.txt",'w') as inf:
-        inf.write("yes")
     main()
