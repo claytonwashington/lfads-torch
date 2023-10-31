@@ -66,7 +66,7 @@ def main():
     configpath = get_config()
     with open(configpath, 'r') as file:
         config = yaml.safe_load(file)
-        if "multisessoin" in config and config["multisession"] == True:
+        if "multisession" in config and config["multisession"] == True:
             subprocess.run(['/bin/bash','-c',command_multisession.format(configpath)])
         else:
             subprocess.run(['/bin/bash','-c',command_single.format(configpath)])
