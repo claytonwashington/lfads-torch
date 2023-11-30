@@ -1,68 +1,55 @@
-# Use unique initializations for better diversity
 seed: null
 ignore_warnings: True
 
 multisession: True
 
 model:
+
   _target_: lfads_torch.model.LFADS
+
   # --------- architecture --------- #
-  encod_data_dim: ${model.fac_dim}
-  encod_seq_len: 140
-  recon_seq_len: 180
+  encod_data_dim: 50
+  encod_seq_len: 30
+  recon_seq_len: ${model.encod_seq_len}
   ext_input_dim: 0
   ic_enc_seq_len: 0
   ic_enc_dim: 100
-  ci_enc_dim: 80
+  ci_enc_dim: 100
   ci_lag: 1
-  con_dim: 80
-  co_dim: 4
+  con_dim: 100
+  co_dim: 6
   ic_dim: 100
   gen_dim: 100
-  fac_dim: 40
+  fac_dim: 50
+
   # --------- readin / readout --------- #
   readin:
-    _target_: torch.nn.ModuleList
-    modules:
-      - _target_: torch.nn.Linear
-        in_features: 122
-        out_features: ${model.fac_dim}
-      - _target_: torch.nn.Linear
-        in_features: 114
-        out_features: ${model.fac_dim}
-      - _target_: torch.nn.Linear
-        in_features: 107
-        out_features: ${model.fac_dim}
+    _target_: lfads_torch.modules.readin_readout.MultisessionReadin
+    datafile_pattern: ${datamodule.datafile_pattern}
 
   readout:
-    _target_: torch.nn.ModuleList
-    modules:
-      - _target_: torch.nn.Linear
-        in_features: ${model.fac_dim}
-        out_features: 162
-      - _target_: torch.nn.Linear
-        in_features: ${model.fac_dim}
-        out_features: 152
-      - _target_: torch.nn.Linear
-        in_features: ${model.fac_dim}
-        out_features: 142
+    _target_: lfads_torch.modules.readin_readout.MultisessionReadout
+    datafile_pattern: ${datamodule.datafile_pattern}
+
   # --------- augmentation --------- #
   train_aug_stack:
     _target_: lfads_torch.modules.augmentations.AugmentationStack
     transforms:
       - _target_: lfads_torch.modules.augmentations.CoordinatedDropout
-        cd_rate: 0.3
+        cd_rate: 0.3 # sampled
         cd_pass_rate: 0.0
         ic_enc_seq_len: ${model.ic_enc_seq_len}
     batch_order: [0]
     loss_order: [0]
   infer_aug_stack:
     _target_: lfads_torch.modules.augmentations.AugmentationStack
+
   # --------- priors / posteriors --------- #
   reconstruction:
-    - _target_: lfads_torch.modules.recons.Poisson
-    - _target_: lfads_torch.modules.recons.Poisson
-    - _target_: lfads_torch.modules.recons.Poisson
+    _target_: lfads_torch.modules.recons.MultisessionReconstruction
+    datafile_pattern: ${datamodule.datafile_pattern}
+    recon:
+      _target_: lfads_torch.modules.recons.Poisson
   variational: True
   co_prior:
     _target_: lfads_torch.modules.priors.AutoregressiveMultivariateNormal
@@ -75,6 +62,7 @@ model:
     variance: 0.1
     shape: ${model.ic_dim}
   ic_post_var_min: 1.0e-4
+
   # --------- misc --------- #
   dropout_rate: 0.02 # sampled
   cell_clip: 5.0
@@ -88,37 +76,26 @@ model:
   lr_patience: 6
   lr_adam_beta1: 0.9
   lr_adam_beta2: 0.999
-  lr_adam_epsilon: 1.0e-8
+  lr_adam_epsilon: 3.1623e-5
   lr_scheduler: False
 
   # --------- regularization --------- #
   weight_decay: 0.0
   l2_start_epoch: 0
-  l2_increase_epoch: 80
+  l2_increase_epoch: 50
   l2_ic_enc_scale: 0.0
   l2_ci_enc_scale: 0.0
   l2_gen_scale: 0.0 # sampled
   l2_con_scale: 0.0 # sampled
   kl_start_epoch: 0
-  kl_increase_epoch: 80
+  kl_increase_epoch: 50
   kl_ic_scale: 0.0 # sampled
   kl_co_scale: 0.0 # sampled
 
 datamodule:
   _target_: lfads_torch.datamodules.BasicDataModule
-  data_paths:
-    - mc_maze_large-05ms-val.h5
-    - mc_maze_medium-05ms-val.h5
-    - mc_maze_small-05ms-val.h5
-  batch_keys:
-    - behavior
-  attr_keys:
-    - psth
-    - train_cond_idx
-    - valid_cond_idx
-    - train_decode_mask
-    - valid_decode_mask
-  batch_size: 192
+  datafile_pattern: ${relpath:datasets/rouse_multisession/lfads_*.h5}
+  batch_size: 1000
 
 pbt:
   metric: valid/recon_smth
