@@ -26,7 +26,7 @@ print(f"--Data: {datadirpath} Config: {configpath} Results: {resultpath}--")
 with open(configpath) as yfile:
     configfile = yaml.safe_load(yfile)
     cfg = configfile["pbt"]
-    cfg_datapaths = configfile["datamodule"]["data_paths"]
+    cfg_data_pattern = configfile["datamodule"]["datafile_pattern"]
 
 # Instantiate hyperparameters
 hyperparam_space = instantiate(cfg["hps"])
@@ -37,9 +37,8 @@ if not os.path.isdir(datadirpath):
     datadirpath = os.path.dirname(datadirpath)
 
 # Make config and overrides
-overrides= {}
-for i, datapath in enumerate(cfg_datapaths):
-    overrides[f"datamodule.data_paths.{str(i)}"] = os.path.join(datadirpath,datapath)
+full_data_pattern = os.path.join(datadirpath,cfg_data_pattern)
+overrides= {"datamodule.datafile_pattern": full_data_pattern}
 config=overrides.copy()
 config.update(init_space)
 

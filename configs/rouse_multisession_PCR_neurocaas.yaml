@@ -94,14 +94,14 @@ model:
 
 datamodule:
   _target_: lfads_torch.datamodules.BasicDataModule
-  datafile_pattern: ${relpath:datasets/rouse_multisession/lfads_*.h5}
+  datafile_pattern: lfads_*.h5
   batch_size: 1000
 
 pbt:
   metric: valid/recon_smth
   resources_per_trial:
     cpu: 2
-    gpu: 0.5
+    gpu: .5
   num_samples: 16
   perturbation_interval: 25
   burn_in_period: 30 # ramping + perturbation_interval

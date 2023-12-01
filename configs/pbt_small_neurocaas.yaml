@@ -85,8 +85,7 @@ model:
 
 datamodule:
   _target_: lfads_torch.datamodules.BasicDataModule
-  data_paths:
-    - mc_maze_small-05ms-val.h5
+  datafile_pattern: mc_maze_small-05ms-val.h5
   batch_keys:
     - behavior
   attr_keys:
