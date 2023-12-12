@@ -89,7 +89,7 @@ model:
   l2_con_scale: 0.0 # sampled
   kl_start_epoch: 0
   kl_increase_epoch: 50
-  kl_ic_scale: 0.0 # sampled
+  kl_ic_scale: 0.0 # sampledq
   kl_co_scale: 0.0 # sampled
 
 datamodule:
