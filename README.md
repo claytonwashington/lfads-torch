@@ -1,8 +1,6 @@
 # `lfads-torch`: A modular and extensible implementation of latent factor analysis via dynamical systems
 
-[![Gitter](https://img.shields.io/badge/chat-on%20gitter-brightgreen)](https://app.gitter.im/#/room/#lfads:gitter.im)
-
-[![arXiv](https://img.shields.io/badge/arXiv-2309.01230-b31b1b.svg)](https://arxiv.org/abs/2309.01230)
+[![arXiv](https://img.shields.io/badge/arXiv-2309.01230-b31b1b.svg)](https://arxiv.org/abs/2309.01230) [![Gitter](https://img.shields.io/badge/chat-on%20gitter-brightgreen)](https://app.gitter.im/#/room/#lfads:gitter.im)
 
 Latent factor analysis via dynamical systems (LFADS) is a variational sequential autoencoder that achieves state-of-the-art performance in denoising high-dimensional neural spiking activity for downstream applications in science and engineering [1, 2, 3, 4]. Recently introduced variants have continued to demonstrate the applicability of the architecture to a wide variety of problems in neuroscience [5, 6, 7, 8]. Since the development of the original implementation of LFADS, new technologies have emerged that use dynamic computation graphs [9], minimize boilerplate code [10], compose model configuration files [11], and simplify large-scale training [12]. Building on these modern Python libraries, we introduce `lfads-torch` &mdash; a new open-source implementation of LFADS designed to be easier to understand, configure, and extend.
 
