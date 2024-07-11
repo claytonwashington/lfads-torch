@@ -1,6 +1,6 @@
 # `lfads-torch`: A modular and extensible implementation of latent factor analysis via dynamical systems
 
-[![Gitter](https://img.shields.io/gitter/room/lfads.svg)](https://gitter.im/lfads?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Gitter](https://img.shields.io/badge/chat-on%20gitter-brightgreen)](https://app.gitter.im/#/room/#lfads:gitter.im)
 
 [![arXiv](https://img.shields.io/badge/arXiv-2309.01230-b31b1b.svg)](https://arxiv.org/abs/2309.01230)
 
